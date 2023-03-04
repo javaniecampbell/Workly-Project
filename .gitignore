@@ -948,3 +948,4 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/vs,visualstudio,visualstudiocode,dotnetcore,aspnetcore,jetbrains+all,react,node
+password.txt

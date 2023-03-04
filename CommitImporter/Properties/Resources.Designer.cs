@@ -61,7 +61,7 @@ namespace CommitImporter.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to https://dev.azure.com/***REMOVED***.
+        ///   Looks up a localized string similar to https://dev.azure.com/Digicel-DevOps.
         /// </summary>
         internal static string AZURE_DEVOPS_ORGANIZATION_URL {
             get {
@@ -70,7 +70,7 @@ namespace CommitImporter.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ***REMOVED***.
+        ///   Looks up a localized string similar to va5pegu5exdejs6mt6cg4lf7hyzh75m3my6ni42fnqx7ltlgyq5q.
         /// </summary>
         internal static string AZURE_DEVOPS_PAT {
             get {
