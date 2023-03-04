@@ -17,6 +17,9 @@ namespace Workly.Core.Models
             CommitterEmail= null;
             CommitterDate = null;
             CommitterName = null;
+            FileChangeAdded= null;
+            FileChangeEdited= null;
+            FileChangeDeleted= null;
         }
         public string CommitId { get; set; }
         public string Subject { get; set; }
@@ -28,6 +31,10 @@ namespace Workly.Core.Models
         public string CommitterName { get; set; }
         public DateTime? CommitterDate { get; set; }
         public string CommitterEmail { get; set;}
-    
+
+        public int? FileChangeAdded { get; set; }
+        public int? FileChangeEdited { get; set; }
+        public int? FileChangeDeleted { get; set;}
+
     }
 }
