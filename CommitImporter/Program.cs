@@ -38,7 +38,7 @@ namespace CommitImporter
             Console.WriteLine("Time taken for result: {0} seconds", stopwatch.ElapsedMilliseconds / 1000f);
 
         }
-        #region Unrefactored Implementation for Reference
+        #region Old Implementation for Reference
 
         private static async Task ArchiveAfterRefactor()
         {
