@@ -2,6 +2,8 @@
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
+using System.Diagnostics;
+using Workly.Core;
 using Workly.Core.Models;
 
 namespace CommitImporter
@@ -10,16 +12,57 @@ namespace CommitImporter
     {
         static async Task Main(string[] args)
         {
-            await GetAllCommits();
+            try
+            {
+                var stopwatch = new Stopwatch();
+                Console.WriteLine("Retrieving all commits.....");
+                stopwatch.Start();
+                var commits = await GetAllCommits().ToListAsync();
+                stopwatch.Stop();
 
+                Console.WriteLine("Time taken for result: {0} seconds", stopwatch.ElapsedMilliseconds / 1000f);
+                //await foreach (var commit in GetAllCommits().Take(3))
+                //{
+
+
+                //    Console.WriteLine("\nHash: {1}\nSubject: {0}\nBody: {2}\n\n", commit.Subject, commit.CommitId, commit.Body);
+                //    //var count = await transformed.CountAsync();
+                //    //if (count <= 0)
+                //    //{
+                //    //    Console.WriteLine("\nNo Commits to show for: {0}", repo);
+                //    //}
+
+                //    //Console.WriteLine("\n\nTotal Commits: {0} for Repo: {1}", count, repo);
+                //}
+
+                var repo = new CommitsRepository();
+                Console.WriteLine("Saving all commits.....");
+                
+                stopwatch.Restart();
+                _ = await repo.BulkInsertAsync(commits);
+                stopwatch.Stop();
+                Console.WriteLine("Time taken for result: {0} seconds", stopwatch.ElapsedMilliseconds / 1000f);
+            }
+            catch (Exception e)
+            {
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Error {0}", e.Message ?? e?.InnerException?.Message);
+            }
             Console.ReadLine();
         }
 
-        private static async Task GetAllCommits()
+        private static async IAsyncEnumerable<Commit> GetAllCommits()
         {
-            string[] repos = new string[] { "dc1e47d0-4b54-4bec-a60c-6dd6ef15df91", "946fd4ff-c9b0-43ff-bc8e-9ee68b2dcc6f", "fee96637-9fc7-428c-8d25-bd50d3961325", "9993424a-e46b-47d7-a00c-f128402cbb71", "0970eff7-d8ea-4678-b02d-97c7486802aa" };
+            string[] repos = new string[] {
+                "dc1e47d0-4b54-4bec-a60c-6dd6ef15df91",
+                "946fd4ff-c9b0-43ff-bc8e-9ee68b2dcc6f",
+                "fee96637-9fc7-428c-8d25-bd50d3961325",
+                "9993424a-e46b-47d7-a00c-f128402cbb71",
+                "0970eff7-d8ea-4678-b02d-97c7486802aa"
+            };
             var connection = GetVssConnection();
-            using (var git = connection.GetClient<GitHttpClient>())
+            using (var git = await connection.GetClientAsync<GitHttpClient>())
             {
                 foreach (var repo in repos)
                 {
@@ -28,51 +71,63 @@ namespace CommitImporter
                         Top = Int32.MaxValue,
                     });
 
-                    var transformed = await TransformToModel(commits, repo);
-
-                    var sample = transformed.Take(3);
-
-                    sample.ForEach(x => Console.WriteLine("\nHash: {1}\nSubject: {0}\nBody: {2}\n\n",x.Subject,x.CommitId,x.Body));
-
-                    if(transformed.Count() <= 0)
+                    await foreach (Commit commit in TransformToModel(commits, repo))
                     {
-                        Console.WriteLine("\nNo Commits to show for: {0}", repo);
+                        yield return commit;
                     }
-                   
-                    Console.WriteLine("\n\nTotal Commits: {0} for Repo: {1}", transformed.Count(), repo);
+
                 }
 
-                
+
             }
         }
 
-        private static async Task<List<Commit>> TransformToModel(List<GitCommitRef> commits, string repo)
+        private static async IAsyncEnumerable<Commit> TransformToModel(List<GitCommitRef> commits, string repo)
         {
             var connection = GetVssConnection();
-            var result = new List<Commit>();
-            using (var client = connection.GetClient<GitHttpClient>())
+            // var result = new List<Commit>();
+             using (var client = await connection.GetClientAsync<GitHttpClient>())
             {
                 foreach (var commitRef in commits)
                 {
                     var commit = await client.GetCommitAsync(commitRef.CommitId, repo);
-                    result.Add(new Commit
+                    var repository = await client.GetRepositoryAsync(repo);
+                    //result.Add(new Commit
+                    //{
+                    //    CommitId = commitRef.CommitId,
+                    //    AuthorName = commitRef.Author.Name,
+                    //    AuthorEmail = commitRef.Author.Email,
+                    //    AuthorDate = commitRef.Author.Date,
+                    //    CommitterName = commitRef.Committer.Name,
+                    //    Subject = commitRef.Comment.Split("\n")[0],
+                    //    CommitterEmail = commitRef.Committer.Email,
+                    //    CommitterDate = commitRef.Committer.Date,
+                    //    Body = commit.Comment,
+                    //    CommitMessage = commitRef.Comment,
+                    //});
+                    yield return new Commit
                     {
                         CommitId = commitRef.CommitId,
-                        AuthorName = commitRef.Author.Name,
-                        AuthorEmail = commitRef.Author.Email,
+                        AuthorName = commitRef.Author.Name.Equals("=") ? commit.Push.PushedBy.DisplayName + " *MP" : commitRef.Author.Name,
+                        AuthorEmail = commitRef.Author.Email.Equals("=") ? commit.Push.PushedBy.UniqueName + " *MP" : commitRef.Author.Email,
                         AuthorDate = commitRef.Author.Date,
-                        CommitterName = commitRef.Committer.Name,
+                        CommitterName = commitRef.Committer.Name.Equals("=") ? commit.Push.PushedBy.DisplayName + " *MP" : commitRef.Committer.Name,
                         Subject = commitRef.Comment.Split("\n")[0],
-                        CommitterEmail = commitRef.Committer.Email,
+                        CommitterEmail = commitRef.Committer.Email.Equals("=") ? commit.Push.PushedBy.UniqueName + " *MP"  : commitRef.Committer.Email,
                         CommitterDate = commitRef.Committer.Date,
                         Body = commit.Comment,
                         CommitMessage = commitRef.Comment,
-                    });
+                        FileChangeAdded = commitRef.ChangeCounts[VersionControlChangeType.Add],
+                        FileChangeDeleted = commitRef.ChangeCounts[VersionControlChangeType.Delete],
+                        FileChangeEdited = commitRef.ChangeCounts[VersionControlChangeType.Edit],
+                        RepositoryName = repository.Name,
+                        RepositoryId = repository.Id.ToString(),
+                    };
                 }
             }
-        
 
-            return result;
+
+            //return result;
         }
 
         private static VssConnection GetVssConnection()
