@@ -3,13 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33403.182
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommitImporter", "CommitImporter\CommitImporter.csproj", "{6E8D2B62-84D5-4F2C-8DC1-5B103D62712F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommitImporter", "CommitImporter\CommitImporter.csproj", "{6E8D2B62-84D5-4F2C-8DC1-5B103D62712F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Workly.Core", "Workly.Core\Workly.Core.csproj", "{DF9F3626-9478-4FAE-A3CF-CBA0545BA054}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Workly.Core", "Workly.Core\Workly.Core.csproj", "{DF9F3626-9478-4FAE-A3CF-CBA0545BA054}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "Api\Api.csproj", "{14B5D6D3-3022-4349-AA36-8963C73CF9E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api", "Api\Api.csproj", "{14B5D6D3-3022-4349-AA36-8963C73CF9E8}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "dashboardui", "dashboardui\dashboardui.esproj", "{8173361C-5CAB-4699-B0C7-C77546A3D739}"
+	ProjectSection(ProjectDependencies) = postProject
+		{14B5D6D3-3022-4349-AA36-8963C73CF9E8} = {14B5D6D3-3022-4349-AA36-8963C73CF9E8}
+		{6E8D2B62-84D5-4F2C-8DC1-5B103D62712F} = {6E8D2B62-84D5-4F2C-8DC1-5B103D62712F}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
