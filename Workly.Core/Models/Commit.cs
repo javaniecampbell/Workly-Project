@@ -32,9 +32,12 @@ namespace Workly.Core.Models
         public DateTime? CommitterDate { get; set; }
         public string CommitterEmail { get; set;}
 
-        public int? FileChangeAdded { get; set; }
-        public int? FileChangeEdited { get; set; }
-        public int? FileChangeDeleted { get; set;}
+        public long? FileChangeAdded { get; set; }
+        public long? FileChangeEdited { get; set; }
+        public long? FileChangeDeleted { get; set;}
+
+        public string RepositoryName { get; set; }
+        public string RepositoryId { get; set; }
 
     }
 }
