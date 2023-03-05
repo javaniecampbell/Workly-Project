@@ -22,21 +22,15 @@ namespace Workly.Core
             this.personalAccessToken = personalAccessToken;
         }
 
-        public async IAsyncEnumerable<Commit> GetAllCommits()
+        public async IAsyncEnumerable<Commit> GetAllCommits(string projectIdOrName,string[] repositoryIds)
         {
-            string[] repos = new string[] {
-                "dc1e47d0-4b54-4bec-a60c-6dd6ef15df91",
-                "946fd4ff-c9b0-43ff-bc8e-9ee68b2dcc6f",
-                "fee96637-9fc7-428c-8d25-bd50d3961325",
-                "9993424a-e46b-47d7-a00c-f128402cbb71",
-                "0970eff7-d8ea-4678-b02d-97c7486802aa"
-            };
+
             var connection = GetVssConnection();
             using (var git = await connection.GetClientAsync<GitHttpClient>())
             {
-                foreach (var repo in repos)
+                foreach (var repo in repositoryIds)
                 {
-                    var commits = await git.GetCommitsAsync("40ef9a6b-d17b-4454-b6a6-3de33e04504f", repo, new GitQueryCommitsCriteria
+                    var commits = await git.GetCommitsAsync(projectIdOrName, repo, new GitQueryCommitsCriteria
                     {
                         Top = Int32.MaxValue,
                     });
