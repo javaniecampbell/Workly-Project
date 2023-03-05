@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.Services.Common;
+﻿using Microsoft.TeamFoundation.SourceControl.WebApi;
+using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Resources;
 using System.Text;
 using System.Threading.Tasks;
+using Workly.Core.Models;
 
 namespace Workly.Core
 {
@@ -18,6 +20,54 @@ namespace Workly.Core
         {
             this.organizationUrl = organizationUrl;
             this.personalAccessToken = personalAccessToken;
+        }
+
+        private async IAsyncEnumerable<Commit> TransformToModel(List<GitCommitRef> commits, string repo)
+        {
+            var connection = GetVssConnection();
+            // var result = new List<Commit>();
+            using (var client = await connection.GetClientAsync<GitHttpClient>())
+            {
+                foreach (var commitRef in commits)
+                {
+                    var commit = await client.GetCommitAsync(commitRef.CommitId, repo);
+                    var repository = await client.GetRepositoryAsync(repo);
+                    //result.Add(new Commit
+                    //{
+                    //    CommitId = commitRef.CommitId,
+                    //    AuthorName = commitRef.Author.Name,
+                    //    AuthorEmail = commitRef.Author.Email,
+                    //    AuthorDate = commitRef.Author.Date,
+                    //    CommitterName = commitRef.Committer.Name,
+                    //    Subject = commitRef.Comment.Split("\n")[0],
+                    //    CommitterEmail = commitRef.Committer.Email,
+                    //    CommitterDate = commitRef.Committer.Date,
+                    //    Body = commit.Comment,
+                    //    CommitMessage = commitRef.Comment,
+                    //});
+                    yield return new Commit
+                    {
+                        CommitId = commitRef.CommitId,
+                        AuthorName = commitRef.Author.Name.Equals("=") ? commit.Push.PushedBy.DisplayName + " *MP" : commitRef.Author.Name,
+                        AuthorEmail = commitRef.Author.Email.Equals("=") ? commit.Push.PushedBy.UniqueName + " *MP" : commitRef.Author.Email,
+                        AuthorDate = commitRef.Author.Date,
+                        CommitterName = commitRef.Committer.Name.Equals("=") ? commit.Push.PushedBy.DisplayName + " *MP" : commitRef.Committer.Name,
+                        Subject = commitRef.Comment.Split("\n")[0],
+                        CommitterEmail = commitRef.Committer.Email.Equals("=") ? commit.Push.PushedBy.UniqueName + " *MP" : commitRef.Committer.Email,
+                        CommitterDate = commitRef.Committer.Date,
+                        Body = commit.Comment,
+                        CommitMessage = commitRef.Comment,
+                        FileChangeAdded = commitRef.ChangeCounts[VersionControlChangeType.Add],
+                        FileChangeDeleted = commitRef.ChangeCounts[VersionControlChangeType.Delete],
+                        FileChangeEdited = commitRef.ChangeCounts[VersionControlChangeType.Edit],
+                        RepositoryName = repository.Name,
+                        RepositoryId = repository.Id.ToString(),
+                    };
+                }
+            }
+
+
+            //return result;
         }
         private VssConnection GetVssConnection()
         {
