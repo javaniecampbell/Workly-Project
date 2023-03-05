@@ -1,3 +1,5 @@
+using Api.Hubs;
+
 namespace Api
 {
     public class Program
@@ -7,6 +9,7 @@ namespace Api
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddSignalR();
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -26,7 +29,7 @@ namespace Api
 
             app.UseAuthorization();
 
-            app.MapHub
+            app.MapHub<NotificationHub>("/hubs/notifications");
             app.MapControllers();
 
             app.Run();
